@@ -33,6 +33,18 @@ func main() {
 		log.Fatalf("loadFoo: %v", err)
 	}
 
+	// Creating the map works
+	//mount_ns_set, err := ebpf.NewMap(&ebpf.MapSpec{
+	//	Type:       ebpf.Hash,
+	//	KeySize:    8,
+	//	ValueSize:  4,
+	//	MaxEntries: 1024,
+	//})
+	//if err != nil {
+	//	log.Fatalf("create my map: %s", err)
+	//}
+
+	// loading from pinned doesn't work
 	mount_ns_set, err := ebpf.LoadPinnedMap("/sys/fs/bpf/mount_ns_set", nil)
 	if err != nil {
 		log.Fatalf("load my map: %s", err)
