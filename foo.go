@@ -14,9 +14,6 @@ import (
 	"github.com/cilium/ebpf/rlimit"
 )
 
-// #include <linux/types.h>
-import "C"
-
 type foo struct {
 	VfsReadEntry *ebpf.Program `ebpf:"vfs_read_entry"`
 }
