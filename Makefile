@@ -1,6 +1,6 @@
 all: foo foo.bpf.o
 
-foo: foo.bpf.o
+foo: foo.bpf.o foo.go
 	go build .
 
 foo.bpf.o: bpf/foo.bpf.c

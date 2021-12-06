@@ -8,15 +8,14 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"runtime"
 
 	"github.com/cilium/ebpf"
 	"github.com/cilium/ebpf/link"
 	"github.com/cilium/ebpf/rlimit"
 )
 
-type foo struct {
-	VfsReadEntry *ebpf.Program `ebpf:"vfs_read_entry"`
-}
+//go:generate go run github.com/cilium/ebpf/cmd/bpf2go -target bpfel -cc clang foo ./bpf/foo.bpf.c -- -I./bpf/ -I../../.. -target bpf -D__TARGET_ARCH_x86
 
 func main() {
 	// Allow the current process to lock memory for eBPF resources.
@@ -24,8 +23,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	objs := foo{}
-	spec, err := ebpf.LoadCollectionSpec("./foo.bpf.o")
+	objs := fooObjects{}
+	spec, err := loadFoo()
 	if err != nil {
 		log.Fatalf("loadFoo: %v", err)
 	}
@@ -51,9 +50,15 @@ func main() {
 		"mount_ns_set": mount_ns_set,
 	})
 
+	// this also causes https://github.com/cilium/ebpf/issues/515
+	runtime.GC()
+
 	if err := spec.LoadAndAssign(&objs, nil); err != nil {
 		log.Fatalf("loading objects: %v", err)
 	}
+
+	// avoid https://github.com/cilium/ebpf/issues/515
+	runtime.KeepAlive(mount_ns_set)
 
 	kpread, err := link.Kprobe("vfs_read", objs.VfsReadEntry)
 	if err != nil {
